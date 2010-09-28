@@ -1,0 +1,1 @@
+This library provides programmatic access to the Pivotal API using .net.  Eventually, all the Pivotal APIs will be implemented, but for now it is just the most commonly used items.
