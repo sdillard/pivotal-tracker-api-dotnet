@@ -1,4 +1,5 @@
 This library provides programmatic access to the Pivotal API using .net.  Eventually, all the Pivotal APIs will be implemented, but for now it is just the most commonly used items.
+NOTE: This started as an enhancement to a project on google code, but it ended up being an overhaul.  However, there are still some remnants of that original code, so credit needs to be given to the author: http://code.google.com/p/pivotal-tracker-api/ 
 
 To Do:
 - Write tests
