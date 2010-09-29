@@ -5,6 +5,9 @@ using System.Text;
 
 namespace PivotalTrackerAPI.Util
 {
+  /// <summary>
+  /// Options used when fetching data for a model.  Only used in models that maintain a cache
+  /// </summary>
   public struct PivotalFetchOptions
   {
     /// <summary>

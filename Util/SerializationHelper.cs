@@ -9,6 +9,9 @@ using System.Xml;
 namespace PivotalTrackerAPI.Util
 {
   // Based on this: http://rhyous.com/2010/04/29/generic-xml-serializer-class-for-c-and-an-xml-serialization-usage-example/
+  /// <summary>
+  /// Helper class for serializing objects to various formats
+  /// </summary>
   public static class SerializationHelper
   {
     /// <summary>
@@ -125,7 +128,7 @@ namespace PivotalTrackerAPI.Util
     /// Serializes an XmlDocument to an instance object of type T
     /// </summary>
     /// <typeparam name="T">The Type of object</typeparam>
-    /// <param name="xmlString">document to read</param>
+    /// <param name="xmlDocument">document to read</param>
     public static T DeserializeFromXmlDocument<T>(XmlDocument xmlDocument)
     {
       XmlSerializer deserializer = new XmlSerializer(typeof(T));

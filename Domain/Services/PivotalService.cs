@@ -31,6 +31,7 @@ namespace PivotalTrackerAPI.Domain.Services
     /// <remarks>This method does not catch errors, so the caller needs to handle any failures to communicate with Pivotal</remarks>
     /// <param name="url">Url to submit to</param>
     /// <param name="data">Xml data as a string</param>
+    /// <param name="method">The method (PUT, DELETE, POST, or GET) to use when sending data to the server</param>
     /// <returns>response from Pivotal API</returns>
     public static XmlDocument SubmitData(string url, string data, ServiceMethod method)
     {
@@ -117,6 +118,14 @@ namespace PivotalTrackerAPI.Domain.Services
       return xmlDoc;
     }
 
+    /// <summary>
+    /// Strips out content in a model instance that should not be submitted to Pivotal or that is blank (optional)
+    /// </summary>
+    /// <param name="xml">The xml document to clean up</param>
+    /// <param name="rootXpath">The root node to begin searching for elements</param>
+    /// <param name="ignoredNodes">A list of nodes that should be removed</param>
+    /// <param name="removeIfHasAttributes">Controls whether the cleanup should remove any attributes and remove any elements that have attributes (useful when the only reason for an attribute is the deserialization putting a nil attribute in the emitted xml)</param>
+    /// <returns>The cleaned xml as a string, ready for submission</returns>
     public static string CleanXmlForSubmission(XmlDocument xml, string rootXpath, string[] ignoredNodes, bool removeIfHasAttributes)
     {
       XmlNode toRemove = null;

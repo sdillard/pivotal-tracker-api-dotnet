@@ -6,6 +6,9 @@ using PivotalTrackerAPI.Domain.Enumerations;
 
 namespace PivotalTrackerAPI.Util
 {
+  /// <summary>
+  /// Helpers used in constructing filters to use when querying Pivotal
+  /// </summary>
   public static class PivotalFilterHelper
   {
     /// <summary>
@@ -21,7 +24,7 @@ namespace PivotalTrackerAPI.Util
     /// <summary>
     /// Creates a query string to use as a filter parameter (does not prepend the ampersand)
     /// </summary>
-    /// <param name="label">The labels to filter on</param>
+    /// <param name="labels">The labels to filter on</param>
     /// <param name="baseFilter">the filter to extend.  Leave blank or null to create a new filter base</param>
     /// <returns>A query string</returns>
     public static string BuildLabelFilter(IList<string> labels, string baseFilter)
@@ -124,7 +127,7 @@ namespace PivotalTrackerAPI.Util
     /// <summary>
     /// Creates a query string to use as a filter parameter (does not prepend the ampersand)
     /// </summary>
-    /// <param name="id">The list of external ids to filter on</param>
+    /// <param name="ids">The list of external ids to filter on</param>
     /// <param name="baseFilter">the filter to extend.  Leave blank or null to create a new filter base</param>
     /// <returns>A query string</returns>
     public static string BuildExternalIdFilter(IList<int> ids, string baseFilter)

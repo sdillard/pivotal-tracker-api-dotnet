@@ -10,20 +10,57 @@ using System.Web;
 
 namespace PivotalTrackerAPI.Domain.Model
 {
+  /// <summary>
+  /// Container class for a list of stories
+  /// </summary>
   [XmlRoot("stories")]
   public class PivotalStoryList
   {
+    /// <summary>
+    /// List of stories
+    /// </summary>
     [XmlElement("story")]
     public List<PivotalStory> Stories { get; set; }
   }
 
+  /// <summary>
+  /// A single story in Pivotal
+  /// </summary>
   [XmlRoot("story")]
   public class PivotalStory
   {
+    /// <summary>
+    /// Constructor
+    /// </summary>
     public PivotalStory()
     {
       _labelValues = new List<string>();
       StoryType = PivotalStoryType.feature;
+    }
+
+    /// <summary>
+    /// Constructor
+    /// </summary>
+    /// <param name="storyType">The story type</param>
+    /// <param name="name">Name of the story</param>
+    /// <param name="description">Story description</param>
+    public PivotalStory(PivotalStoryType storyType, string name, string description)
+    {
+      StoryType = storyType;
+      Name = name;
+      Description = description;
+    }
+
+    /// <summary>
+    /// Constructor
+    /// </summary>
+    /// <param name="storyType">The story type</param>
+    /// <param name="name">Name of the story</param>
+    /// <param name="description">Story description</param>
+    /// <param name="labels">Labels for the story</param>
+    public PivotalStory(PivotalStoryType storyType, string name, string description, string labels) : this(storyType, name, description)
+    {
+      Labels = labels;
     }
 
     /// <summary>
@@ -40,12 +77,21 @@ namespace PivotalTrackerAPI.Domain.Model
     private PivotalStoryType _storyType;
     private List<string> _labelValues;
 
+    /// <summary>
+    /// The Pivotal id of the project the story belongs to
+    /// </summary>
     [XmlElement("project_id", IsNullable = true)]
     public Nullable<int> ProjectId { get; set; }
 
+    /// <summary>
+    /// The Pivotal id of the story
+    /// </summary>
     [XmlElement("id", IsNullable = true)]
-    public Nullable<int> StoryId { get; set; }
+    public Nullable<int> Id { get; set; }
 
+    /// <summary>
+    /// The type of story as a string (use StoryType to get the enumeration)
+    /// </summary>
     [XmlElement("story_type", IsNullable = true)]
     public string StoryTypeString
     {
@@ -57,6 +103,9 @@ namespace PivotalTrackerAPI.Domain.Model
       }
     }
 
+    /// <summary>
+    /// The type of story
+    /// </summary>
     [XmlIgnore]
     public PivotalStoryType StoryType
     {
@@ -71,18 +120,33 @@ namespace PivotalTrackerAPI.Domain.Model
       }
     }
 
+    /// <summary>
+    /// The name of the story
+    /// </summary>
     [XmlElement("name", IsNullable = true)]
     public string Name { get; set; }
 
+    /// <summary>
+    /// The description for the story
+    /// </summary>
     [XmlElement("description", IsNullable = true)]
     public string Description { get; set; }
 
+    /// <summary>
+    /// The name of the person that requested the story
+    /// </summary>
     [XmlElement("requested_by", IsNullable = true)]
     public string Requestor { get; set; }
 
+    /// <summary>
+    /// The name of the owner of the story
+    /// </summary>
     [XmlElement("owned_by", IsNullable = true)]
     public string Owner { get; set; }
 
+    /// <summary>
+    /// The labels associated with the story as a comma-delimited string
+    /// </summary>
     [XmlElement("labels", IsNullable = true)]
     public string Labels
     {
@@ -97,15 +161,48 @@ namespace PivotalTrackerAPI.Domain.Model
       }
     }
 
+    /// <summary>
+    /// The point estimate for the story
+    /// </summary>
     [XmlElement("estimate", IsNullable = true)]
     public Nullable<int> Estimate { get; set; }
 
+    /// <summary>
+    /// The url for the story
+    /// </summary>
     [XmlElement("url", IsNullable = true)]
     public string Url { get; set; }
 
+    /// <summary>
+    /// The current state of the story
+    /// </summary>
     [XmlElement("current_state", IsNullable = true)]
-    public string CurrentState { get; set; }
+    public string CurrentStateValue { get; set; }
 
+    /// <summary>
+    /// The current state of the story as an enumeration
+    /// </summary>
+    [XmlIgnore]
+    public StoryState CurrentState
+    {
+      get
+      {
+        string stateText = CurrentStateValue.ToLower();
+        StoryState state = StoryState.Unknown;
+        try
+        {
+          state = (StoryState)Enum.Parse(typeof(StoryState), stateText);
+        }
+        catch
+        {
+        }
+        return state;
+      }
+    }
+
+    /// <summary>
+    /// The date the story was created (as the original string from Pivotal).  Use CreationDate for the DateTime value
+    /// </summary>
     [XmlElement("created_at", IsNullable = true)]
     public string CreationDateString
     {
@@ -132,6 +229,9 @@ namespace PivotalTrackerAPI.Domain.Model
       }
     }
 
+    /// <summary>
+    /// The creation date of the story
+    /// </summary>
     [XmlIgnore]
     public DateTime CreationDate
     {
@@ -146,6 +246,9 @@ namespace PivotalTrackerAPI.Domain.Model
       }
     }
 
+    /// <summary>
+    /// The date the story was accepted (as the original string from Pivotal)
+    /// </summary>
     [XmlElement("accepted_at", IsNullable = true)]
     public string AcceptedDateString
     {
@@ -172,6 +275,9 @@ namespace PivotalTrackerAPI.Domain.Model
       }
     }
 
+    /// <summary>
+    /// The date the story was accepted
+    /// </summary>
     [XmlIgnore]
     public DateTime AcceptedDate
     {
@@ -185,9 +291,10 @@ namespace PivotalTrackerAPI.Domain.Model
         _acceptedDateString = _acceptedDate.ToString("yyyy/MM/dd hh:mm:ss") + " UTC";
       }
     }
-
     
-
+    /// <summary>
+    /// Labels associated wth the story
+    /// </summary>
     [XmlIgnore]
     public IList<string> LabelValues
     {
@@ -212,7 +319,7 @@ namespace PivotalTrackerAPI.Domain.Model
     /// <summary>
     /// Gets all the stories for a project
     /// </summary>
-    /// <param name="service">The service containing the token</param>
+    /// <param name="user">The user to get the ApiToken from</param>
     /// <param name="projectId">The id of the project to get stories for</param>
     /// <returns>the stories for the project</returns>
     public static IList<PivotalStory> FetchStories(PivotalUser user, int projectId)
@@ -224,7 +331,7 @@ namespace PivotalTrackerAPI.Domain.Model
     /// Gets the stories for a project using a filter to limit the data returned
     /// </summary>
     /// <see cref="PivotalTrackerAPI.Util.PivotalFilterHelper"/>
-    /// <param name="service">The service containing the token</param>
+    /// <param name="user">The user to get the ApiToken from</param>
     /// <param name="projectId">The id of the project to get stories for</param>
     /// <param name="filter">The filter to limit the data returned</param>
     /// <returns>the stories for the project</returns>
@@ -237,7 +344,13 @@ namespace PivotalTrackerAPI.Domain.Model
       PivotalStoryList storyList = SerializationHelper.DeserializeFromXmlDocument<PivotalStoryList>(xmlDoc);
       return storyList.Stories;
     }
-
+    /// <summary>
+    /// Gets s single story for a project
+    /// </summary>
+    /// <param name="user">The user to get the ApiToken from</param>
+    /// <param name="projectId">The id of the project to get stories for</param>
+    /// <param name="storyId">The id of the story to get</param>
+    /// <returns>the stories for the project</returns>
     public static PivotalStory FetchStory(PivotalUser user, int projectId, string storyId)
     {
       string url = String.Format("{0}/projects/{1}/story/{2}?token={3}", PivotalService.BaseUrl, projectId.ToString(), storyId, user.ApiToken);
@@ -246,6 +359,13 @@ namespace PivotalTrackerAPI.Domain.Model
       return story;
     }
 
+    /// <summary>
+    /// Adds a story to Pivotal
+    /// </summary>
+    /// <param name="user">The user to get the ApiToken from</param>
+    /// <param name="projectId">The id of the project</param>
+    /// <param name="story">The story to add</param>
+    /// <returns>The created story</returns>
     public static PivotalStory AddStory(PivotalUser user, int projectId, PivotalStory story)
     {
       string url = String.Format("{0}/projects/{1}/stories?token={2}", PivotalService.BaseUrl, projectId.ToString(), user.ApiToken);
@@ -261,13 +381,13 @@ namespace PivotalTrackerAPI.Domain.Model
     /// <summary>
     /// Updates a story without requiring a reference
     /// </summary>
-    /// <param name="user.ApiToken">The API Token</param>
+    /// <param name="user">The user to get the ApiToken from</param>
     /// <param name="projectId">The project id</param>
     /// <param name="story">The story id</param>
     /// <returns>The updated story instance</returns>
     public static PivotalStory UpdateStory(PivotalUser user, string projectId, PivotalStory story)
     {
-      string url = String.Format("{0}/projects/{1}/story/{2}?token={3}", PivotalService.BaseUrl, projectId, story.StoryId, user.ApiToken);
+      string url = String.Format("{0}/projects/{1}/story/{2}?token={3}", PivotalService.BaseUrl, projectId, story.Id, user.ApiToken);
 
       XmlDocument xml = SerializationHelper.SerializeToXmlDocument<PivotalStory>(story);
 
@@ -281,7 +401,7 @@ namespace PivotalTrackerAPI.Domain.Model
     /// Updates the story with new values
     /// </summary>
     /// <remarks>Uses reflection to iterate properties, so does carry some overhead in terms of performance</remarks>
-    /// <param name="user.ApiToken">The API Token</param>
+    /// <param name="user">The user to get the ApiToken from</param>
     /// <returns>The updated story instance</returns>
     public PivotalStory UpdateStory(PivotalUser user)
     {
@@ -295,21 +415,31 @@ namespace PivotalTrackerAPI.Domain.Model
       return this;
     }
 
+    /// <summary>
+    /// Deletes a story from Pivotal
+    /// </summary>
+    /// <param name="user">The user to get the ApiToken from</param>
+    /// <param name="projectId">The project id</param>
+    /// <param name="story">The story id</param>
+    /// <returns>The story that was deleted</returns>
     public static PivotalStory DeleteStory(PivotalUser user, string projectId, PivotalStory story)
     {
-      string url = String.Format("{0}/projects/{1}/story/{2}?token={3}", PivotalService.BaseUrl, projectId, story.StoryId, user.ApiToken);
-
+      string url = String.Format("{0}/projects/{1}/story/{2}?token={3}", PivotalService.BaseUrl, projectId, story.Id, user.ApiToken);
       XmlDocument xml = SerializationHelper.SerializeToXmlDocument<PivotalStory>(story);
-
       string storyXml = PivotalService.CleanXmlForSubmission(xml, "//story/", ExcludeNodesOnSubmit, true);
-
       XmlDocument response = PivotalService.SubmitData(url, storyXml, ServiceMethod.DELETE);
       return story;
     }
 
+    /// <summary>
+    /// Adds a note (comment) to a story
+    /// </summary>
+    /// <param name="user">The user to get the ApiToken from</param>
+    /// <param name="noteText">The text to add to the story</param>
+    /// <returns>The text that was added</returns>
     public string AddNote(PivotalUser user, string noteText)
     {
-      string url = String.Format("{0}/projects/{1}/stories/{2}?token={3}", PivotalService.BaseUrl, ProjectId, StoryId, user.ApiToken);
+      string url = String.Format("{0}/projects/{1}/stories/{2}?token={3}", PivotalService.BaseUrl, ProjectId, Id, user.ApiToken);
 
       string storyXml = String.Format("<note><text>{0}</text></note>", WebEncoding.UrlEncode(noteText));
 
@@ -317,12 +447,20 @@ namespace PivotalTrackerAPI.Domain.Model
       return noteText;
     }
 
+    /// <summary>
+    /// The cached list of tasks for the story
+    /// </summary>
     [XmlIgnore]
     public IList<PivotalTask> Tasks{ get; private set; }
 
-    public IList<PivotalTask> LoadTasks(PivotalUser user, string projectId)
+    /// <summary>
+    /// Updates the cache of tasks for the story and returns the list
+    /// </summary>
+    /// <param name="user">The user to get the ApiToken from</param>
+    /// <returns></returns>
+    public IList<PivotalTask> LoadTasks(PivotalUser user)
     {
-      Tasks = PivotalTask.FetchTasks(user, projectId, StoryId.GetValueOrDefault().ToString(), "");
+      Tasks = PivotalTask.FetchTasks(user, ProjectId.ToString(), Id.GetValueOrDefault().ToString(), "");
       return Tasks;
     }
   }
