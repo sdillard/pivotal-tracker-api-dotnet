@@ -7,31 +7,7 @@ using System.Xml.Serialization;
 
 namespace PivotalTrackerAPI.Domain.Model
 {
-  /// <summary>
-  /// Container class for lists of memberships
-  /// </summary>
-  [XmlRoot("memberships")]
-  public class PivotalMembershipList
-  {
-    /// <summary>
-    /// Constructor
-    /// </summary>
-    public PivotalMembershipList() { }
-
-    /// <summary>
-    /// Constructor
-    /// </summary>
-    /// <param name="members">The members associated with the group</param>
-    public PivotalMembershipList(IList<PivotalMembership> members)
-    {
-      Memberships = members;
-    }
-    /// <summary>
-    /// Container property for memberships
-    /// </summary>
-    [XmlElement("membership")]
-    public IList<PivotalMembership> Memberships { get; set; }
-  }
+  
 
   /// <summary>
   /// Membership information for a given person
@@ -39,6 +15,8 @@ namespace PivotalTrackerAPI.Domain.Model
   [XmlRoot("membership")]
   public class PivotalMembership
   {
+    #region Constructors
+
     /// <summary>
     /// Constructor
     /// </summary>
@@ -54,6 +32,11 @@ namespace PivotalTrackerAPI.Domain.Model
       Person = person;
       Role = role;
     }
+
+    #endregion
+
+    #region Public Properties
+
     /// <summary>
     /// The Pivotal id of the membership (not the person?)
     /// </summary>
@@ -71,5 +54,7 @@ namespace PivotalTrackerAPI.Domain.Model
     /// </summary>
     [XmlElement("role", IsNullable = true)]
     public string Role { get; set; }
+
+    #endregion
   }
 }

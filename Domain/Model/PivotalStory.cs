@@ -11,24 +11,13 @@ using System.Web;
 namespace PivotalTrackerAPI.Domain.Model
 {
   /// <summary>
-  /// Container class for a list of stories
-  /// </summary>
-  [XmlRoot("stories")]
-  public class PivotalStoryList
-  {
-    /// <summary>
-    /// List of stories
-    /// </summary>
-    [XmlElement("story")]
-    public List<PivotalStory> Stories { get; set; }
-  }
-
-  /// <summary>
   /// A single story in Pivotal
   /// </summary>
   [XmlRoot("story")]
   public class PivotalStory
   {
+    #region Constructors
+
     /// <summary>
     /// Constructor
     /// </summary>
@@ -63,10 +52,14 @@ namespace PivotalTrackerAPI.Domain.Model
       Labels = labels;
     }
 
+    #endregion
+
     /// <summary>
     /// Attributes that should be removed from the XML before posting the data.
     /// </summary>
     public static string[] ExcludeNodesOnSubmit = new string[] { "url", "created_at", "accepted_at", "id", "project_id" };
+
+    #region Private Properties
 
     private string _labels;
     private string _storyTypeString;
@@ -76,6 +69,10 @@ namespace PivotalTrackerAPI.Domain.Model
     private DateTime _acceptedDate;
     private PivotalStoryType _storyType;
     private List<string> _labelValues;
+
+    #endregion
+
+    #region Public Properties
 
     /// <summary>
     /// The Pivotal id of the project the story belongs to
@@ -100,23 +97,6 @@ namespace PivotalTrackerAPI.Domain.Model
       {
         _storyTypeString = value;
         StoryType = (PivotalStoryType)Enum.Parse(typeof(PivotalStoryType), value);
-      }
-    }
-
-    /// <summary>
-    /// The type of story
-    /// </summary>
-    [XmlIgnore]
-    public PivotalStoryType StoryType
-    {
-      get
-      {
-        return _storyType;
-      }
-      set
-      {
-        _storyType = value;
-        _storyTypeString = value.ToString();
       }
     }
 
@@ -180,27 +160,6 @@ namespace PivotalTrackerAPI.Domain.Model
     public string CurrentStateValue { get; set; }
 
     /// <summary>
-    /// The current state of the story as an enumeration
-    /// </summary>
-    [XmlIgnore]
-    public StoryState CurrentState
-    {
-      get
-      {
-        string stateText = CurrentStateValue.ToLower();
-        StoryState state = StoryState.Unknown;
-        try
-        {
-          state = (StoryState)Enum.Parse(typeof(StoryState), stateText);
-        }
-        catch
-        {
-        }
-        return state;
-      }
-    }
-
-    /// <summary>
     /// The date the story was created (as the original string from Pivotal).  Use CreationDate for the DateTime value
     /// </summary>
     [XmlElement("created_at", IsNullable = true)]
@@ -226,23 +185,6 @@ namespace PivotalTrackerAPI.Domain.Model
         }
         else
           CreationDate = new DateTime();
-      }
-    }
-
-    /// <summary>
-    /// The creation date of the story
-    /// </summary>
-    [XmlIgnore]
-    public DateTime CreationDate
-    {
-      get
-      {
-        return _creationDate;
-      }
-      set
-      {
-        _creationDate = value;
-        _creationDateString = _creationDate.ToString("yyyy/MM/dd hh:mm:ss") + " UTC";
       }
     }
 
@@ -275,6 +217,25 @@ namespace PivotalTrackerAPI.Domain.Model
       }
     }
 
+    #region Non-Pivotal Properties (helpers)
+
+    /// <summary>
+    /// The type of story
+    /// </summary>
+    [XmlIgnore]
+    public PivotalStoryType StoryType
+    {
+      get
+      {
+        return _storyType;
+      }
+      set
+      {
+        _storyType = value;
+        _storyTypeString = value.ToString();
+      }
+    }
+
     /// <summary>
     /// The date the story was accepted
     /// </summary>
@@ -291,7 +252,7 @@ namespace PivotalTrackerAPI.Domain.Model
         _acceptedDateString = _acceptedDate.ToString("yyyy/MM/dd hh:mm:ss") + " UTC";
       }
     }
-    
+
     /// <summary>
     /// Labels associated wth the story
     /// </summary>
@@ -315,6 +276,58 @@ namespace PivotalTrackerAPI.Domain.Model
         _labelValues = listVals;
       }
     }
+
+    /// <summary>
+    /// The current state of the story as an enumeration
+    /// </summary>
+    [XmlIgnore]
+    public StoryState CurrentState
+    {
+      get
+      {
+        string stateText = CurrentStateValue.ToLower();
+        StoryState state = StoryState.Unknown;
+        try
+        {
+          state = (StoryState)Enum.Parse(typeof(StoryState), stateText);
+        }
+        catch
+        {
+        }
+        return state;
+      }
+    }
+
+    /// <summary>
+    /// The creation date of the story
+    /// </summary>
+    [XmlIgnore]
+    public DateTime CreationDate
+    {
+      get
+      {
+        return _creationDate;
+      }
+      set
+      {
+        _creationDate = value;
+        _creationDateString = _creationDate.ToString("yyyy/MM/dd hh:mm:ss") + " UTC";
+      }
+    }
+
+    /// <summary>
+    /// The cached list of tasks for the story.  Be sure to use LoadTasks before calling this.  Once that method is called, use this property to access previously retrieved tasks
+    /// </summary>
+    [XmlIgnore]
+    public IList<PivotalTask> Tasks { get; private set; }
+
+    #endregion
+
+    #endregion
+
+    #region Data Operations
+
+    #region Story Retrieval
 
     /// <summary>
     /// Gets all the stories for a project
@@ -359,6 +372,25 @@ namespace PivotalTrackerAPI.Domain.Model
       return story;
     }
 
+    #endregion
+
+    #region Task Operations
+
+    /// <summary>
+    /// Updates the cache of tasks for the story and returns the list
+    /// </summary>
+    /// <param name="user">The user to get the ApiToken from</param>
+    /// <returns></returns>
+    public IList<PivotalTask> LoadTasks(PivotalUser user)
+    {
+      Tasks = PivotalTask.FetchTasks(user, ProjectId.ToString(), Id.GetValueOrDefault().ToString(), "");
+      return Tasks;
+    }
+
+    #endregion
+
+    #region Data Manipulation Operations
+
     /// <summary>
     /// Adds a story to Pivotal
     /// </summary>
@@ -369,11 +401,8 @@ namespace PivotalTrackerAPI.Domain.Model
     public static PivotalStory AddStory(PivotalUser user, int projectId, PivotalStory story)
     {
       string url = String.Format("{0}/projects/{1}/stories?token={2}", PivotalService.BaseUrl, projectId.ToString(), user.ApiToken);
-      
       XmlDocument xml = SerializationHelper.SerializeToXmlDocument<PivotalStory>(story);
-
       string storyXml = PivotalService.CleanXmlForSubmission(xml, "//story/", ExcludeNodesOnSubmit, true);
-
       XmlDocument response = PivotalService.SubmitData(url, storyXml, ServiceMethod.POST);
       return SerializationHelper.DeserializeFromXmlDocument<PivotalStory>(response);
     }
@@ -388,11 +417,8 @@ namespace PivotalTrackerAPI.Domain.Model
     public static PivotalStory UpdateStory(PivotalUser user, string projectId, PivotalStory story)
     {
       string url = String.Format("{0}/projects/{1}/story/{2}?token={3}", PivotalService.BaseUrl, projectId, story.Id, user.ApiToken);
-
       XmlDocument xml = SerializationHelper.SerializeToXmlDocument<PivotalStory>(story);
-
       string storyXml = PivotalService.CleanXmlForSubmission(xml, "//story/", ExcludeNodesOnSubmit, true);
-
       XmlDocument response = PivotalService.SubmitData(url, storyXml, ServiceMethod.PUT);
       return SerializationHelper.DeserializeFromXmlDocument<PivotalStory>(response);
     }
@@ -411,7 +437,6 @@ namespace PivotalTrackerAPI.Domain.Model
       {
         p.SetValue(this, p.GetValue(updatedStory, null), null);
       }
-
       return this;
     }
 
@@ -447,21 +472,12 @@ namespace PivotalTrackerAPI.Domain.Model
       return noteText;
     }
 
-    /// <summary>
-    /// The cached list of tasks for the story
-    /// </summary>
-    [XmlIgnore]
-    public IList<PivotalTask> Tasks{ get; private set; }
+    #endregion
 
-    /// <summary>
-    /// Updates the cache of tasks for the story and returns the list
-    /// </summary>
-    /// <param name="user">The user to get the ApiToken from</param>
-    /// <returns></returns>
-    public IList<PivotalTask> LoadTasks(PivotalUser user)
-    {
-      Tasks = PivotalTask.FetchTasks(user, ProjectId.ToString(), Id.GetValueOrDefault().ToString(), "");
-      return Tasks;
-    }
+    #endregion
+
+    
+
+    
   }
 }

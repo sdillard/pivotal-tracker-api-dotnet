@@ -13,6 +13,8 @@ namespace PivotalTrackerAPI.Domain.Model
   [XmlRoot("person")]
   public class PivotalPerson
   {
+    #region Constructors
+
     /// <summary>
     /// Constructor
     /// </summary>
@@ -40,6 +42,10 @@ namespace PivotalTrackerAPI.Domain.Model
       Initials = initials;
     }
 
+    #endregion
+
+    #region Public Properties
+
     /// <summary>
     /// The person's email address
     /// </summary>
@@ -57,5 +63,7 @@ namespace PivotalTrackerAPI.Domain.Model
     /// </summary>
     [XmlElement("initials", IsNullable = true)]
     public string Initials { get; set; }
+
+    #endregion
   }
 }

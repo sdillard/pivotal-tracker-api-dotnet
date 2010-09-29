@@ -15,6 +15,8 @@ namespace PivotalTrackerAPI.Domain.Model
   [XmlRoot("token")]
   public class PivotalUser
   {
+    #region Public Properties
+
     /// <summary>
     /// The ApiToken for the user -- used for all access to the Pivotal API.
     /// </summary>
@@ -26,6 +28,10 @@ namespace PivotalTrackerAPI.Domain.Model
     /// </summary>
     [XmlElement("id")]
     public Nullable<int> Id { get; set; }
+
+    #endregion
+
+    #region Operations
 
     /// <summary>
     /// Retrieves the user's information, including the token, from Pivotal
@@ -40,5 +46,7 @@ namespace PivotalTrackerAPI.Domain.Model
       PivotalUser user = SerializationHelper.DeserializeFromXmlDocument<PivotalUser>(xmlDoc);
       return user;
     }
+
+    #endregion
   }
 }

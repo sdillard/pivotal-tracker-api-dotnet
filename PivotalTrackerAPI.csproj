@@ -57,10 +57,14 @@
     <Compile Include="Domain\Enumerations\ServiceMethod.cs" />
     <Compile Include="Domain\Enumerations\StoryState.cs" />
     <Compile Include="Domain\Model\PivotalMembership.cs" />
+    <Compile Include="Domain\Model\PivotalMembershipList.cs" />
     <Compile Include="Domain\Model\PivotalPerson.cs" />
     <Compile Include="Domain\Model\PivotalProject.cs" />
+    <Compile Include="Domain\Model\PivotalProjectList.cs" />
     <Compile Include="Domain\Model\PivotalStory.cs" />
+    <Compile Include="Domain\Model\PivotalStoryList.cs" />
     <Compile Include="Domain\Model\PivotalTask.cs" />
+    <Compile Include="Domain\Model\PivotalTaskList.cs" />
     <Compile Include="Domain\Model\PivotalUser.cs" />
     <Compile Include="Util\PivotalFetchOptions.cs" />
     <Compile Include="Util\PivotalFilterHelper.cs" />

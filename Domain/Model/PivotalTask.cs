@@ -8,18 +8,6 @@ using System.Xml.Serialization;
 
 namespace PivotalTrackerAPI.Domain.Model
 {
-  /// <summary>
-  /// Container for a task list
-  /// </summary>
-  [XmlRoot("tasks")]
-  public class PivotalTaskList
-  {
-    /// <summary>
-    /// List of tasks
-    /// </summary>
-    [XmlElement("task")]
-    public List<PivotalTask> Tasks { get; set; }
-  }
 
   /// <summary>
   /// A task associated with a story
@@ -32,8 +20,14 @@ namespace PivotalTrackerAPI.Domain.Model
     /// </summary>
     public static string[] ExcludeNodesOnSubmit = new string[] { "id", "created_at", "position" };
 
+    #region Private Properties
+
     private string _creationDateString;
     private DateTime _creationDate;
+
+    #endregion
+
+    #region Public Properties
 
     /// <summary>
     /// The id of the task
@@ -89,6 +83,8 @@ namespace PivotalTrackerAPI.Domain.Model
       }
     }
 
+    #region Non-Pivotal Properties (helpers)
+
     /// <summary>
     /// The date the task was created
     /// </summary>
@@ -105,6 +101,32 @@ namespace PivotalTrackerAPI.Domain.Model
         _creationDateString = _creationDate.ToString("yyyy/MM/dd hh:mm:ss") + " UTC";
       }
     }
+
+    #endregion
+
+    #endregion
+
+    #region Data Retrieval
+
+    /// <summary>
+    /// Retrieves tasks with an optional filter
+    /// </summary>
+    /// <param name="user">The user to get the ApiToken from</param>
+    /// <param name="projectId">The project id</param>
+    /// <param name="storyId">The story id</param>
+    /// <param name="filter">Filter to pass to Pivotal</param>
+    /// <returns></returns>
+    public static IList<PivotalTask> FetchTasks(PivotalUser user, string projectId, string storyId, string filter)
+    {
+      string url = String.Format("{0}/projects/{1}/story/{2}/tasks?token={3}", PivotalService.BaseUrl, projectId, storyId, user.ApiToken);
+      if (!string.IsNullOrEmpty(filter))
+        url += "&" + filter;
+      XmlDocument xmlDoc = PivotalService.GetData(url);
+      PivotalTaskList taskList = SerializationHelper.DeserializeFromXmlDocument<PivotalTaskList>(xmlDoc);
+      return taskList.Tasks;
+    }
+
+    #region Data Manipulation Methods
 
     /// <summary>
     /// Adds a task to the story
@@ -198,22 +220,8 @@ namespace PivotalTrackerAPI.Domain.Model
       XmlDocument response = PivotalService.SubmitData(url, null, ServiceMethod.DELETE);
     }
 
-    /// <summary>
-    /// Retrieves tasks with an optional filter
-    /// </summary>
-    /// <param name="user">The user to get the ApiToken from</param>
-    /// <param name="projectId">The project id</param>
-    /// <param name="storyId">The story id</param>
-    /// <param name="filter">Filter to pass to Pivotal</param>
-    /// <returns></returns>
-    public static IList<PivotalTask> FetchTasks(PivotalUser user, string projectId, string storyId, string filter)
-    {
-      string url = String.Format("{0}/projects/{1}/story/{2}/tasks?token={3}", PivotalService.BaseUrl, projectId, storyId, user.ApiToken);
-      if (!string.IsNullOrEmpty(filter))
-        url += "&" + filter;
-      XmlDocument xmlDoc = PivotalService.GetData(url);
-      PivotalTaskList taskList = SerializationHelper.DeserializeFromXmlDocument<PivotalTaskList>(xmlDoc);
-      return taskList.Tasks;
-    }
+    #endregion
+
+    #endregion
   }
 }

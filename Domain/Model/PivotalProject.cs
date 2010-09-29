@@ -11,31 +11,6 @@ using PivotalTrackerAPI.Util;
 
 namespace PivotalTrackerAPI.Domain.Model
 {
-  /// <summary>
-  /// Container class for a list of projects
-  /// </summary>
-  [XmlRoot("projects")]
-  public class PivotalProjectList
-  {
-    /// <summary>
-    /// Constructor
-    /// </summary>
-    public PivotalProjectList() { }
-
-    /// <summary>
-    /// Constructor
-    /// </summary>
-    /// <param name="projects">List of projects</param>
-    public PivotalProjectList(IList<PivotalProject> projects)
-    {
-      Projects = (List<PivotalProject>)projects;
-    }
-    /// <summary>
-    /// The list of projects
-    /// </summary>
-    [XmlElement("project")]
-    public List<PivotalProject> Projects { get; set; }
-  }
 
   /// <summary>
   /// A project in Pivotal
@@ -47,10 +22,17 @@ namespace PivotalTrackerAPI.Domain.Model
     /// Attributes that should be removed from the XML before posting the data.
     /// </summary>
     public static string[] ExcludeNodesOnSubmit = new string[] { "id", "labels", "current_velocity" };
+
+    #region Private Properties
+
     private string _labels;
     private List<string> _labelValues;
     private List<PivotalStory> _storyCache;
-    
+
+    #endregion
+
+    #region Constructors
+
     /// <summary>
     /// Constructor
     /// </summary>
@@ -70,6 +52,10 @@ namespace PivotalTrackerAPI.Domain.Model
       Id = id;
       Name = name;
     }
+
+    #endregion
+
+    #region Public Properties
 
     /// <summary>
     /// The Pivotal Id of the project
@@ -151,6 +137,8 @@ namespace PivotalTrackerAPI.Domain.Model
     [XmlElement("public", IsNullable = true)]
     public Nullable<bool> IsPublic { get; set; }
 
+    #region Properties that are not in the XML (helper properties)
+
     /// <summary>
     /// Returns the day of the week iterations start on and null if the name of the day was not found
     /// </summary>
@@ -194,6 +182,14 @@ namespace PivotalTrackerAPI.Domain.Model
         _labelValues = listVals;
       }
     }
+
+    #endregion
+
+    #endregion
+
+    #region Data Retrieval Methods
+
+    #region Story Retrieval
 
     /// <summary>
     /// Fetches current stories from Pivotal
@@ -323,7 +319,10 @@ namespace PivotalTrackerAPI.Domain.Model
         return _storyCache.Where(x => x.StoryType == PivotalStoryType.release).ToList();
       return PivotalStory.FetchStories(user, Id.GetValueOrDefault(), PivotalFilterHelper.BuildStoryTypeFilter(PivotalStoryType.release, ""));
     }
-    
+
+    #endregion
+
+    #region Project Operations
 
     /// <summary>
     /// Fetches current projects from Pivot for a given user
@@ -369,5 +368,9 @@ namespace PivotalTrackerAPI.Domain.Model
       XmlDocument response = PivotalService.SubmitData(url, projectXml, ServiceMethod.POST);
       return SerializationHelper.DeserializeFromXmlDocument<PivotalProject>(response);
     }
+
+    #endregion
+
+    #endregion
   }
 }
