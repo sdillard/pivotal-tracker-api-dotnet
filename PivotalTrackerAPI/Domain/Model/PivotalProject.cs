@@ -183,6 +183,12 @@ namespace PivotalTrackerAPI.Domain.Model
       }
     }
 
+    /// <summary>
+    /// Holds the stories for the project, set when the LoadStories method is invoked
+    /// </summary>
+    [XmlIgnore]
+    public IList<PivotalStory> Stories { get; private set; }
+
     #endregion
 
     #endregion
@@ -191,6 +197,16 @@ namespace PivotalTrackerAPI.Domain.Model
 
     #region Story Retrieval
 
+    /// <summary>
+    /// Loads the stories for the project and sets them in the Stories property
+    /// </summary>
+    /// <param name="user">The account to get the ApiToken from</param>
+    /// <returns>List of stories</returns>
+    public IList<PivotalStory> LoadStories(PivotalUser user)
+    {
+      Stories = FetchStories(user);
+      return Stories;
+    }
     /// <summary>
     /// Fetches current stories from Pivotal
     /// </summary>
@@ -338,16 +354,32 @@ namespace PivotalTrackerAPI.Domain.Model
     }
 
     /// <summary>
-    /// Fetches a single project from Pivotal
+    /// Fetches a single project from Pivotal and does not fetch the stories
     /// </summary>
     /// <param name="user">The user to get the ApiToken from</param>
     /// <param name="projectId">The id of the project to retrieve</param>
     /// <returns>project</returns>
     public static PivotalProject FetchProject(PivotalUser user, int projectId)
     {
+      return PivotalProject.FetchProject(user, projectId, false);
+    }
+
+    /// <summary>
+    /// Fetches a single project from Pivotal and optionally retrieves the stories and sets them in the Stories property
+    /// </summary>
+    /// <param name="user">The user to get the ApiToken from</param>
+    /// <param name="projectId">The id of the project to retrieve</param>
+    /// <param name="loadStories">Whether to fetch stories and save them in the Stories property</param>
+    /// <returns>project</returns>
+    public static PivotalProject FetchProject(PivotalUser user, int projectId, bool loadStories)
+    {
       string url = String.Format("{0}/project/{1}?token={2}", PivotalService.BaseUrl, projectId.ToString(), user.ApiToken);
       XmlDocument xml = PivotalService.GetData(url);
       PivotalProject project = SerializationHelper.DeserializeFromXmlDocument<PivotalProject>(xml);
+      if (loadStories)
+      {
+        project.LoadStories(user);
+      }
       return project;
     }
 
