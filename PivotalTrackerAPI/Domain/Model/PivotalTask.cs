@@ -20,6 +20,42 @@ namespace PivotalTrackerAPI.Domain.Model
     /// </summary>
     public static string[] ExcludeNodesOnSubmit = new string[] { "id", "created_at", "position" };
 
+    /// <summary>
+    /// Constructor
+    /// </summary>
+    public PivotalTask() { }
+
+    /// <summary>
+    /// Constructor
+    /// </summary>
+    /// <param name="description">The task</param>
+    public PivotalTask(string description)
+    {
+      Description = description;
+    }
+
+    /// <summary>
+    /// Constructor
+    /// </summary>
+    /// <param name="description">The task</param>
+    /// <param name="position">The order of the task in the list</param>
+    public PivotalTask(string description, int position) : this(description)
+    {
+      Position = position;
+    }
+
+    /// <summary>
+    /// Constructor
+    /// </summary>
+    /// <param name="description">The task</param>
+    /// <param name="position">The order of the task in the list</param>
+    /// <param name="isComplete">Whether the task is completed</param>
+    public PivotalTask(string description, int position, bool isComplete)
+      : this(description, position)
+    {
+      Complete = isComplete;
+    }
+
     #region Private Properties
 
     private string _creationDateString;
@@ -116,7 +152,7 @@ namespace PivotalTrackerAPI.Domain.Model
     /// <param name="storyId">The story id</param>
     /// <param name="filter">Filter to pass to Pivotal</param>
     /// <returns></returns>
-    public static IList<PivotalTask> FetchTasks(PivotalUser user, string projectId, string storyId, string filter)
+    public static IList<PivotalTask> FetchTasks(PivotalUser user, int projectId, int storyId, string filter)
     {
       string url = String.Format("{0}/projects/{1}/story/{2}/tasks?token={3}", PivotalService.BaseUrl, projectId, storyId, user.ApiToken);
       if (!string.IsNullOrEmpty(filter))
@@ -136,7 +172,7 @@ namespace PivotalTrackerAPI.Domain.Model
     /// <param name="storyId">The story id</param>
     /// <param name="task">The task to add</param>
     /// <returns>The created task</returns>
-    public PivotalTask AddTask(PivotalUser user, string projectId, string storyId, PivotalTask task)
+    public static PivotalTask AddTask(PivotalUser user, int projectId, int storyId, PivotalTask task)
     {
       string url = String.Format("{0}/projects/{1}/stories/{2}/tasks?token={3}", PivotalService.BaseUrl, projectId, storyId, user.ApiToken);
 
@@ -156,7 +192,7 @@ namespace PivotalTrackerAPI.Domain.Model
     /// <param name="storyId">The story id</param>
     /// <param name="task">The task to update</param>
     /// <returns>The updated task instance</returns>
-    public static PivotalTask UpdateTask(PivotalUser user, string projectId, string storyId, PivotalTask task)
+    public static PivotalTask UpdateTask(PivotalUser user, int projectId, int storyId, PivotalTask task)
     {
       string url = String.Format("{0}/projects/{1}/story/{2}/tasks/{3}?token={4}", PivotalService.BaseUrl, projectId, storyId, task.TaskId.GetValueOrDefault().ToString(), user.ApiToken);
 
@@ -177,13 +213,12 @@ namespace PivotalTrackerAPI.Domain.Model
     /// <returns>The updated task instance</returns>
     public PivotalTask UpdateTask(PivotalUser user, PivotalStory story)
     {
-      PivotalTask updatedTask = PivotalTask.UpdateTask(user, story.ProjectId.GetValueOrDefault().ToString(), story.Id.GetValueOrDefault().ToString(), this);
+      PivotalTask updatedTask = PivotalTask.UpdateTask(user, story.ProjectId.GetValueOrDefault(), story.Id.GetValueOrDefault(), this);
       System.Reflection.PropertyInfo[] properties = this.GetType().GetProperties();
       foreach (System.Reflection.PropertyInfo p in properties)
       {
         p.SetValue(this, p.GetValue(updatedTask, null), null);
       }
-
       return this;
     }
 
@@ -195,7 +230,7 @@ namespace PivotalTrackerAPI.Domain.Model
     /// <param name="storyId">The story id</param>
     /// <param name="task">The task to delete</param>
     /// <returns></returns>
-    public static PivotalTask DeleteTask(PivotalUser user, string projectId, string storyId, PivotalTask task)
+    public static PivotalTask DeleteTask(PivotalUser user, int projectId, int storyId, PivotalTask task)
     {
       string url = String.Format("{0}/projects/{1}/story/{2}/task/{3}?token={4}", PivotalService.BaseUrl, projectId, storyId, task.TaskId.GetValueOrDefault().ToString(), user.ApiToken);
 
@@ -214,7 +249,7 @@ namespace PivotalTrackerAPI.Domain.Model
     /// <param name="projectId">The project id</param>
     /// <param name="storyId">The story id</param>
     /// <param name="taskId">The task to delete</param>
-    public static void DeleteTask(PivotalUser user, string projectId, string storyId, int taskId)
+    public static void DeleteTask(PivotalUser user, int projectId, int storyId, int taskId)
     {
       string url = String.Format("{0}/projects/{1}/story/{2}/task/{3}?token={4}", PivotalService.BaseUrl, projectId, storyId, taskId, user.ApiToken);
       XmlDocument response = PivotalService.SubmitData(url, null, ServiceMethod.DELETE);

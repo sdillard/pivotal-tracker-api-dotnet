@@ -318,8 +318,9 @@ namespace PivotalTrackerAPI.Domain.Model
     /// <summary>
     /// The cached list of tasks for the story.  Be sure to use LoadTasks before calling this.  Once that method is called, use this property to access previously retrieved tasks
     /// </summary>
+    /// <remarks>If you set this property and intend to save it, you have to then iterate the collection of tasks and call add yourself or set the option when creating the story</remarks>
     [XmlIgnore]
-    public IList<PivotalTask> Tasks { get; private set; }
+    public IList<PivotalTask> Tasks { get; set; }
 
     #endregion
 
@@ -383,7 +384,7 @@ namespace PivotalTrackerAPI.Domain.Model
     /// <returns></returns>
     public IList<PivotalTask> LoadTasks(PivotalUser user)
     {
-      Tasks = PivotalTask.FetchTasks(user, ProjectId.ToString(), Id.GetValueOrDefault().ToString(), "");
+      Tasks = PivotalTask.FetchTasks(user, ProjectId.GetValueOrDefault(), Id.GetValueOrDefault(), "");
       return Tasks;
     }
 
@@ -400,11 +401,39 @@ namespace PivotalTrackerAPI.Domain.Model
     /// <returns>The created story</returns>
     public static PivotalStory AddStory(PivotalUser user, int projectId, PivotalStory story)
     {
+      return AddStory(user, projectId, story, false);
+    }
+
+    /// <summary>
+    /// Adds a story to Pivotal
+    /// </summary>
+    /// <param name="user">The user to get the ApiToken from</param>
+    /// <param name="projectId">The id of the project</param>
+    /// <param name="story">The story to add</param>
+    /// <param name="saveTasks">Controls whether any tasks associated with the story should also be saved.</param>
+    /// <returns>The created story</returns>
+    public static PivotalStory AddStory(PivotalUser user, int projectId, PivotalStory story, bool saveTasks)
+    {
       string url = String.Format("{0}/projects/{1}/stories?token={2}", PivotalService.BaseUrl, projectId.ToString(), user.ApiToken);
       XmlDocument xml = SerializationHelper.SerializeToXmlDocument<PivotalStory>(story);
       string storyXml = PivotalService.CleanXmlForSubmission(xml, "//story/", ExcludeNodesOnSubmit, true);
       XmlDocument response = PivotalService.SubmitData(url, storyXml, ServiceMethod.POST);
-      return SerializationHelper.DeserializeFromXmlDocument<PivotalStory>(response);
+      PivotalStory savedStory = SerializationHelper.DeserializeFromXmlDocument<PivotalStory>(response);
+      if (saveTasks)
+      {
+        foreach (PivotalTask task in story.Tasks)
+        {
+          if (task.TaskId.HasValue)
+          {
+            PivotalTask.UpdateTask(user, projectId, savedStory.Id.GetValueOrDefault(), task);
+          }
+          else
+          {
+            PivotalTask.AddTask(user, projectId, savedStory.Id.GetValueOrDefault(), task);
+          }
+        }
+      }
+      return savedStory;
     }
 
     /// <summary>

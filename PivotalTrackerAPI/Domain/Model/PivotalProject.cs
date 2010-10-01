@@ -347,7 +347,7 @@ namespace PivotalTrackerAPI.Domain.Model
     /// <returns>List of projects accessible to the user</returns>
     public static IList<PivotalProject> FetchProjects(PivotalUser user)
     {
-      string url = String.Format("{0}/projects?token={2}", PivotalService.BaseUrl, user.ApiToken);
+      string url = String.Format("{0}/projects?token={1}", PivotalService.BaseUrl, user.ApiToken);
       XmlDocument xml = PivotalService.GetData(url);
       PivotalProjectList projectList = SerializationHelper.DeserializeFromXmlDocument<PivotalProjectList>(xml);
       return projectList.Projects;
@@ -391,7 +391,7 @@ namespace PivotalTrackerAPI.Domain.Model
     /// <returns>The added project</returns>
     public static PivotalProject AddProject(PivotalUser user, PivotalProject project)
     {
-      string url = String.Format("{0}/projects?token={2}", PivotalService.BaseUrl, user.ApiToken);
+      string url = String.Format("{0}/projects?token={1}", PivotalService.BaseUrl, user.ApiToken);
 
       XmlDocument xml = SerializationHelper.SerializeToXmlDocument<PivotalProject>(project);
 
