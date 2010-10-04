@@ -176,7 +176,7 @@ namespace PivotalTrackerAPI.Domain.Model
         }
         string tmpLabels = sb.ToString();
         if (tmpLabels.Length > 0)
-          _labels = tmpLabels.Substring(0, tmpLabels.Length - 1);
+          _labels = tmpLabels.Substring(0, tmpLabels.Length);
         else
           _labels = "";
         _labelValues = listVals;
@@ -188,6 +188,12 @@ namespace PivotalTrackerAPI.Domain.Model
     /// </summary>
     [XmlIgnore]
     public IList<PivotalStory> Stories { get; private set; }
+
+    /// <summary>
+    /// Holds the members in the project, set when the LoadMembers method is invoked
+    /// </summary>
+    [XmlIgnore]
+    public IList<PivotalMembership> Members { get; private set; }
 
     #endregion
 
@@ -373,7 +379,7 @@ namespace PivotalTrackerAPI.Domain.Model
     /// <returns>project</returns>
     public static PivotalProject FetchProject(PivotalUser user, int projectId, bool loadStories)
     {
-      string url = String.Format("{0}/project/{1}?token={2}", PivotalService.BaseUrl, projectId.ToString(), user.ApiToken);
+      string url = String.Format("{0}/projects/{1}?token={2}", PivotalService.BaseUrl, projectId.ToString(), user.ApiToken);
       XmlDocument xml = PivotalService.GetData(url);
       PivotalProject project = SerializationHelper.DeserializeFromXmlDocument<PivotalProject>(xml);
       if (loadStories)
@@ -392,13 +398,92 @@ namespace PivotalTrackerAPI.Domain.Model
     public static PivotalProject AddProject(PivotalUser user, PivotalProject project)
     {
       string url = String.Format("{0}/projects?token={1}", PivotalService.BaseUrl, user.ApiToken);
-
       XmlDocument xml = SerializationHelper.SerializeToXmlDocument<PivotalProject>(project);
-
-      string projectXml = PivotalService.CleanXmlForSubmission(xml, "//project/", ExcludeNodesOnSubmit, true);
-
+      string projectXml = PivotalService.CleanXmlForSubmission(xml, "//project", ExcludeNodesOnSubmit, true);
       XmlDocument response = PivotalService.SubmitData(url, projectXml, ServiceMethod.POST);
       return SerializationHelper.DeserializeFromXmlDocument<PivotalProject>(response);
+    }
+
+    #endregion
+
+    #region Membership Management
+
+    /// <summary>
+    /// Retrieves the membership information for a project
+    /// </summary>
+    /// <param name="user">The user to get the ApiToken from</param>
+    /// <param name="project">The project to get membership info for</param>
+    /// <returns>List of members in the project</returns>
+    public static PivotalMembershipList FetchMembers(PivotalUser user, PivotalProject project)
+    {
+      string url = String.Format("{0}/projects/{1}/memberships?token={2}", PivotalService.BaseUrl, project.Id.ToString(), user.ApiToken);
+      XmlDocument xml = PivotalService.GetData(url);
+      PivotalMembershipList memberships = SerializationHelper.DeserializeFromXmlDocument<PivotalMembershipList>(xml);
+      return memberships;
+    }
+
+    /// <summary>
+    /// Retrieves the membership information for the project
+    /// </summary>
+    /// <param name="user">The user to get the ApiToken from</param>
+    /// <returns>List of members in the project</returns>
+    public IList<PivotalMembership> FetchMembers(PivotalUser user)
+    {
+      return FetchMembers(user, this).Memberships;
+    }
+
+    /// <summary>
+    /// Retrieves the membership information for the project and updates the property to cache the list
+    /// </summary>
+    /// <param name="user">The user to get the ApiToken from</param>
+    /// <returns>List of members in the project</returns>
+    public IList<PivotalMembership> LoadMembers(PivotalUser user)
+    {
+      Members = FetchMembers(user, this).Memberships;
+      return Members;
+    }
+
+
+
+    /// <summary>
+    /// Adds a member to a project
+    /// </summary>
+    /// <param name="user">The user to get the ApiToken from</param>
+    /// <param name="project">The project to get membership info for</param>
+    /// <param name="member">The person and role to add to the project</param>
+    /// <returns>The added member's identity</returns>
+    public static PivotalMembership AddMember(PivotalUser user, PivotalProject project, PivotalMembership member)
+    {
+      string url = String.Format("{0}/projects/{1}/memberships?token={2}", PivotalService.BaseUrl, project.Id.ToString(), user.ApiToken);
+      XmlDocument xml = SerializationHelper.SerializeToXmlDocument<PivotalMembership>(member);
+      string memberXml = PivotalService.CleanXmlForSubmission(xml, "//membership", ExcludeNodesOnSubmit, true);
+      XmlDocument response = PivotalService.SubmitData(url, memberXml, ServiceMethod.POST);
+      return SerializationHelper.DeserializeFromXmlDocument<PivotalMembership>(response);
+    }
+
+    /// <summary>
+    /// Removes a member from a project in Pivotal
+    /// </summary>
+    /// <param name="user">The user to get the ApiToken from</param>
+    /// <param name="member">The member to remove</param>
+    /// <returns>The member that was removed</returns>
+    public PivotalMembership RemoveMember(PivotalUser user, PivotalMembership member)
+    {
+      return RemoveMember(user, this, member);
+    }
+
+    /// <summary>
+    /// Removes a member from a project in Pivotal
+    /// </summary>
+    /// <param name="user">The user to get the ApiToken from</param>
+    /// <param name="project">The project to remove the person from</param>
+    /// <param name="member">The member to remove</param>
+    /// <returns>The member that was removed</returns>
+    public static PivotalMembership RemoveMember(PivotalUser user, PivotalProject project, PivotalMembership member)
+    {
+      string url = String.Format("{0}/projects/{1}/memberships/{2}?token={3}", PivotalService.BaseUrl, project.Id.GetValueOrDefault(), member.Id.GetValueOrDefault(), user.ApiToken);
+      XmlDocument response = PivotalService.SubmitData(url, null, ServiceMethod.DELETE);
+      return member;
     }
 
     #endregion

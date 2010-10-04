@@ -8,10 +8,8 @@ NOTE: This started as an enhancement to a project on google code, but it ended u
 # To Do
 
 * Write tests
-* More CRUD operations
+* Less commonly used parts of the API (at least for me)
   * Project: Update, Delete(?)
-  * Membership: Update, Delete, Add
-  * Iterations: (not implemented at all)
   * Stories: Pagination, Deliver, Move, External Integrations, Attachments
 
 

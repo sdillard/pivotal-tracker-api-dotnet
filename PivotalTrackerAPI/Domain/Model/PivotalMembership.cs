@@ -41,7 +41,7 @@ namespace PivotalTrackerAPI.Domain.Model
     /// The Pivotal id of the membership (not the person?)
     /// </summary>
     [XmlElement("id")]
-    public int Id { get; set; }
+    public Nullable<int> Id { get; set; }
 
     /// <summary>
     /// The person associated with the membership

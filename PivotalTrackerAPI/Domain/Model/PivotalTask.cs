@@ -178,7 +178,7 @@ namespace PivotalTrackerAPI.Domain.Model
 
       XmlDocument xml = SerializationHelper.SerializeToXmlDocument<PivotalTask>(task);
 
-      string taskXml = PivotalService.CleanXmlForSubmission(xml, "//story/", ExcludeNodesOnSubmit, true);
+      string taskXml = PivotalService.CleanXmlForSubmission(xml, "//story", ExcludeNodesOnSubmit, true);
 
       XmlDocument response = PivotalService.SubmitData(url, taskXml, ServiceMethod.POST);
       return SerializationHelper.DeserializeFromXmlDocument<PivotalTask>(response);
@@ -198,7 +198,7 @@ namespace PivotalTrackerAPI.Domain.Model
 
       XmlDocument xml = SerializationHelper.SerializeToXmlDocument<PivotalTask>(task);
 
-      string taskXml = PivotalService.CleanXmlForSubmission(xml, "//task/", ExcludeNodesOnSubmit, true);
+      string taskXml = PivotalService.CleanXmlForSubmission(xml, "//task", ExcludeNodesOnSubmit, true);
 
       XmlDocument response = PivotalService.SubmitData(url, taskXml, ServiceMethod.PUT);
       return SerializationHelper.DeserializeFromXmlDocument<PivotalTask>(response);
@@ -236,7 +236,7 @@ namespace PivotalTrackerAPI.Domain.Model
 
       XmlDocument xml = SerializationHelper.SerializeToXmlDocument<PivotalTask>(task);
 
-      string taskXml = PivotalService.CleanXmlForSubmission(xml, "//task/", ExcludeNodesOnSubmit, true);
+      string taskXml = PivotalService.CleanXmlForSubmission(xml, "//task", ExcludeNodesOnSubmit, true);
 
       XmlDocument response = PivotalService.SubmitData(url, taskXml, ServiceMethod.DELETE);
       return task;

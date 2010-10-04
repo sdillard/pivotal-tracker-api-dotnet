@@ -12,6 +12,7 @@ namespace PivotalTrackerAPI.Domain.Model
   /// <summary>
   /// User account in Pivotal.  This information cannot be updated via the API
   /// </summary>
+  [Serializable]
   [XmlRoot("token")]
   public class PivotalUser
   {

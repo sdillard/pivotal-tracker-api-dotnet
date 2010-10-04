@@ -5,6 +5,9 @@ using System.Text;
 using System.Xml.Serialization;
 using System.IO;
 using System.Xml;
+using System.Runtime.Serialization.Formatters;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Runtime.Serialization;
 
 namespace PivotalTrackerAPI.Util
 {
@@ -14,6 +17,51 @@ namespace PivotalTrackerAPI.Util
   /// </summary>
   public static class SerializationHelper
   {
+    /// <summary>
+    /// Serializes an object of type T to a binary file
+    /// </summary>
+    /// <typeparam name="T">The Type of object</typeparam>
+    /// <param name="t">The object to serialize</param>
+    /// <param name="inFilename">File to save</param>
+    public static void SerializeToBinaryFile<T>(T t, String inFilename)
+    {
+      Stream s = null;
+      IFormatter f = new BinaryFormatter();
+      try
+      {
+        s = new FileStream(inFilename, FileMode.Create);
+        f.Serialize(s, t);
+      }
+      finally
+      {
+        if (s != null)
+          s.Close();
+      }
+    }
+
+    /// <summary>
+    /// Deserializes an object of type T from a binary file
+    /// </summary>
+    /// <typeparam name="T">The Type of object</typeparam>
+    /// <param name="inFilename">File to read</param>
+    public static T DeserializeFromBinaryFile<T>(String inFilename)
+    {
+      Stream s = null;
+      IFormatter f = new BinaryFormatter();
+      T retVal = default(T);
+      try
+      {
+        s = new FileStream(inFilename, FileMode.Open);
+        retVal = (T)f.Deserialize(s);
+      }
+      finally
+      {
+        if (s != null)
+          s.Close();
+      }
+      return retVal;
+    }
+
     /// <summary>
     /// Serializes an object of type T to an Xml file
     /// </summary>

@@ -53,9 +53,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Domain\Enumerations\PivotalIterationGroup.cs" />
     <Compile Include="Domain\Enumerations\PivotalStoryType.cs" />
     <Compile Include="Domain\Enumerations\ServiceMethod.cs" />
     <Compile Include="Domain\Enumerations\StoryState.cs" />
+    <Compile Include="Domain\Model\PivotalIteration.cs" />
+    <Compile Include="Domain\Model\PivotalIterationList.cs" />
     <Compile Include="Domain\Model\PivotalMembership.cs" />
     <Compile Include="Domain\Model\PivotalMembershipList.cs" />
     <Compile Include="Domain\Model\PivotalPerson.cs" />

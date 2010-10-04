@@ -39,20 +39,24 @@ namespace PivotalTrackerAPI.Domain.Services
 
       request.ContentType = "application/xml";
       //request.ContentType = "application/x-www-form-urlencoded";
-      request.Method = "POST";
-      byte[] byteArray = Encoding.UTF8.GetBytes(data);
-      request.ContentLength = byteArray.Length;
+      //request.Method = "POST";
+      request.Method = method.ToString();
+      if (!string.IsNullOrEmpty(data))
+      {
+        byte[] byteArray = Encoding.UTF8.GetBytes(data);
+        request.ContentLength = byteArray.Length;
 
-      Stream dataStream = null;
-      try
-      {
-        dataStream = request.GetRequestStream();
-        dataStream.Write(byteArray, 0, byteArray.Length);
-      }
-      finally
-      {
-        if (dataStream != null)
-          dataStream.Close();
+        Stream dataStream = null;
+        try
+        {
+          dataStream = request.GetRequestStream();
+          dataStream.Write(byteArray, 0, byteArray.Length);
+        }
+        finally
+        {
+          if (dataStream != null)
+            dataStream.Close();
+        }
       }
       HttpWebResponse response = null;
       StreamReader reader = null;
@@ -130,29 +134,32 @@ namespace PivotalTrackerAPI.Domain.Services
     {
       XmlNode toRemove = null;
       XmlNode rootNode = xml.SelectSingleNode(rootXpath);
-      foreach (string s in ignoredNodes)
+      if (rootNode != null)
       {
-        toRemove = xml.SelectSingleNode(rootXpath + s);
-        if (toRemove != null)
-          rootNode.RemoveChild(toRemove);
-        //xml.RemoveChild(toRemove);
-      }
-      // The only way a node in the story would have an attribute is if it is null
-      if (removeIfHasAttributes)
-      {
-        XmlNodeList emptyNodes = rootNode.ChildNodes;
-        int nodeCount = emptyNodes.Count;
-        for (int i = 0; i < nodeCount; i++)
+        foreach (string s in ignoredNodes)
         {
-          if (emptyNodes[i] != null && emptyNodes[i].Attributes.Count > 0)
-          {
-            rootNode.RemoveChild(emptyNodes[i]);
-            i--;
-          }
-          if (i >= emptyNodes.Count)
-            break;
+          toRemove = xml.SelectSingleNode(rootXpath + s);
+          if (toRemove != null)
+            rootNode.RemoveChild(toRemove);
+          //xml.RemoveChild(toRemove);
         }
-        rootNode.Attributes.RemoveAll();
+        // The only way a node in the story would have an attribute is if it is null
+        if (removeIfHasAttributes)
+        {
+          XmlNodeList emptyNodes = rootNode.ChildNodes;
+          int nodeCount = emptyNodes.Count;
+          for (int i = 0; i < nodeCount; i++)
+          {
+            if (emptyNodes[i] != null && emptyNodes[i].Attributes.Count > 0)
+            {
+              rootNode.RemoveChild(emptyNodes[i]);
+              i--;
+            }
+            if (i >= emptyNodes.Count)
+              break;
+          }
+          rootNode.Attributes.RemoveAll();
+        }
       }
 
       return xml.DocumentElement.OuterXml;

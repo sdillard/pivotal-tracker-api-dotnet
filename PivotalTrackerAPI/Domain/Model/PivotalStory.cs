@@ -272,7 +272,7 @@ namespace PivotalTrackerAPI.Domain.Model
           sb.Append(s + ",");
         }
         string tmpLabels = sb.ToString();
-        _labels = tmpLabels.Substring(0, _labels.Length - 1);
+        _labels = tmpLabels.Substring(0, _labels.Length);
         _labelValues = listVals;
       }
     }
@@ -358,6 +358,7 @@ namespace PivotalTrackerAPI.Domain.Model
       PivotalStoryList storyList = SerializationHelper.DeserializeFromXmlDocument<PivotalStoryList>(xmlDoc);
       return storyList.Stories;
     }
+
     /// <summary>
     /// Gets s single story for a project
     /// </summary>
@@ -416,7 +417,7 @@ namespace PivotalTrackerAPI.Domain.Model
     {
       string url = String.Format("{0}/projects/{1}/stories?token={2}", PivotalService.BaseUrl, projectId.ToString(), user.ApiToken);
       XmlDocument xml = SerializationHelper.SerializeToXmlDocument<PivotalStory>(story);
-      string storyXml = PivotalService.CleanXmlForSubmission(xml, "//story/", ExcludeNodesOnSubmit, true);
+      string storyXml = PivotalService.CleanXmlForSubmission(xml, "//story", ExcludeNodesOnSubmit, true);
       XmlDocument response = PivotalService.SubmitData(url, storyXml, ServiceMethod.POST);
       PivotalStory savedStory = SerializationHelper.DeserializeFromXmlDocument<PivotalStory>(response);
       if (saveTasks)
@@ -447,7 +448,7 @@ namespace PivotalTrackerAPI.Domain.Model
     {
       string url = String.Format("{0}/projects/{1}/story/{2}?token={3}", PivotalService.BaseUrl, projectId, story.Id, user.ApiToken);
       XmlDocument xml = SerializationHelper.SerializeToXmlDocument<PivotalStory>(story);
-      string storyXml = PivotalService.CleanXmlForSubmission(xml, "//story/", ExcludeNodesOnSubmit, true);
+      string storyXml = PivotalService.CleanXmlForSubmission(xml, "//story", ExcludeNodesOnSubmit, true);
       XmlDocument response = PivotalService.SubmitData(url, storyXml, ServiceMethod.PUT);
       return SerializationHelper.DeserializeFromXmlDocument<PivotalStory>(response);
     }
@@ -480,7 +481,7 @@ namespace PivotalTrackerAPI.Domain.Model
     {
       string url = String.Format("{0}/projects/{1}/story/{2}?token={3}", PivotalService.BaseUrl, projectId, story.Id, user.ApiToken);
       XmlDocument xml = SerializationHelper.SerializeToXmlDocument<PivotalStory>(story);
-      string storyXml = PivotalService.CleanXmlForSubmission(xml, "//story/", ExcludeNodesOnSubmit, true);
+      string storyXml = PivotalService.CleanXmlForSubmission(xml, "//story", ExcludeNodesOnSubmit, true);
       XmlDocument response = PivotalService.SubmitData(url, storyXml, ServiceMethod.DELETE);
       return story;
     }
