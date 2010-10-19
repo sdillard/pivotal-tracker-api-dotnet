@@ -110,7 +110,7 @@ namespace PivotalTrackerAPI.Domain.Model
     /// The stories associated with the iteration
     /// </summary>
     [XmlElement("stories")]
-    public IList<PivotalStory> Stories { get; set; }
+    public PivotalStoryList Stories { get; set; }
 
     #region Non-Pivotal Properties (helpers)
 
@@ -161,7 +161,7 @@ namespace PivotalTrackerAPI.Domain.Model
     public float CalculateVelocity()
     {
       float velocity = 0.0f;
-      foreach (PivotalStory s in this.Stories)
+      foreach (PivotalStory s in this.Stories.Stories)
       {
         velocity += s.Estimate.GetValueOrDefault();
       }
