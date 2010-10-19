@@ -342,6 +342,18 @@ namespace PivotalTrackerAPI.Domain.Model
       return PivotalStory.FetchStories(user, Id.GetValueOrDefault(), PivotalFilterHelper.BuildStoryTypeFilter(PivotalStoryType.release, ""));
     }
 
+    /// <summary>
+    /// Adds a story to Pivotal
+    /// </summary>
+    /// <param name="user">The user to get the ApiToken from</param>
+    /// <param name="story">The story to add</param>
+    /// <param name="saveTasks">Controls whether any tasks associated with the story should also be saved.</param>
+    /// <returns>The created story</returns>
+    public PivotalStory AddStory(PivotalUser user, PivotalStory story, bool saveTasks)
+    {
+      return PivotalStory.AddStory(user, this.Id.GetValueOrDefault(), story, saveTasks);
+    }
+
     #endregion
 
     #region Project Operations
@@ -402,6 +414,44 @@ namespace PivotalTrackerAPI.Domain.Model
       string projectXml = PivotalService.CleanXmlForSubmission(xml, "//project", ExcludeNodesOnSubmit, true);
       XmlDocument response = PivotalService.SubmitData(url, projectXml, ServiceMethod.POST);
       return SerializationHelper.DeserializeFromXmlDocument<PivotalProject>(response);
+    }
+
+    /// <summary>
+    /// Updates a project in Pivotal
+    /// </summary>
+    /// <param name="user">The user to get the ApiToken from (user will be owner of the project)</param>
+    /// <returns>The updated project</returns>
+    public PivotalProject UpdateProject(PivotalUser user)
+    {
+      return UpdateProject(user, this);
+    }
+
+    /// <summary>
+    /// Updates a project in Pivotal
+    /// </summary>
+    /// <param name="user">The user to get the ApiToken from (user will be owner of the project)</param>
+    /// <param name="project">Project information to update</param>
+    /// <returns>The updated project</returns>
+    public static PivotalProject UpdateProject(PivotalUser user, PivotalProject project)
+    {
+      string url = String.Format("{0}/projects/{1}?token={2}", PivotalService.BaseUrl, project.Id.GetValueOrDefault(), user.ApiToken);
+      XmlDocument xml = SerializationHelper.SerializeToXmlDocument<PivotalProject>(project);
+      string projectXml = PivotalService.CleanXmlForSubmission(xml, "//project", ExcludeNodesOnSubmit, true);
+      XmlDocument response = PivotalService.SubmitData(url, projectXml, ServiceMethod.PUT);
+      return SerializationHelper.DeserializeFromXmlDocument<PivotalProject>(response);
+    }
+
+    /// <summary>
+    /// Removes a project in Pivotal (not sure this works)
+    /// </summary>
+    /// <param name="user">The user to get the ApiToken from</param>
+    /// <param name="project">The project to remove</param>
+    /// <returns>The project that was removed</returns>
+    public static PivotalProject DeleteProject(PivotalUser user, PivotalProject project)
+    {
+      string url = String.Format("{0}/projects/{1}?token={2}", PivotalService.BaseUrl, project.Id.GetValueOrDefault(), user.ApiToken);
+      XmlDocument response = PivotalService.SubmitData(url, null, ServiceMethod.DELETE);
+      return project;
     }
 
     #endregion

@@ -7,10 +7,10 @@ NOTE: This started as an enhancement to a project on google code, but it ended u
 
 # To Do
 
-* Write tests
-* Less commonly used parts of the API (at least for me)
-  * Project: Update, Delete(?)
-  * Stories: Pagination, Deliver, Move, External Integrations, Attachments
+* Write tests (and run them)
+* Parts of the API for stories: Pagination, Deliver, Move, External Integrations, Attachments
+* Review methods for consistency (make sure you can add a story as a static story method with a project object, as a method for a project, and a method in the story class to not require instances of any objects)
+
 
 
 # Common Terms
