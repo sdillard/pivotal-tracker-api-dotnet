@@ -176,7 +176,7 @@ namespace PivotalTrackerAPI.Domain.Model
         {
           try
           {
-            CreationDate = DateTime.ParseExact(value.Substring(0, value.Length - 4), "yyyy/MM/dd hh:mm:ss", new System.Globalization.CultureInfo("en-US", true), System.Globalization.DateTimeStyles.NoCurrentDateDefault);
+            CreationDate = PivotalConverters.ConvertFromPivotalDateTime(value);
           }
           catch
           {
@@ -205,7 +205,7 @@ namespace PivotalTrackerAPI.Domain.Model
         {
           try
           {
-            AcceptedDate = DateTime.ParseExact(value.Substring(0, value.Length - 4), "yyyy/MM/dd hh:mm:ss", new System.Globalization.CultureInfo("en-US", true), System.Globalization.DateTimeStyles.NoCurrentDateDefault);
+            AcceptedDate = PivotalConverters.ConvertFromPivotalDateTime(value);
           }
           catch
           {
@@ -249,7 +249,7 @@ namespace PivotalTrackerAPI.Domain.Model
       set
       {
         _acceptedDate = value;
-        _acceptedDateString = _acceptedDate.ToString("yyyy/MM/dd hh:mm:ss") + " UTC";
+        _acceptedDateString = PivotalConverters.ConvertToPivotalDateTime(_acceptedDate);
       }
     }
 
@@ -311,7 +311,7 @@ namespace PivotalTrackerAPI.Domain.Model
       set
       {
         _creationDate = value;
-        _creationDateString = _creationDate.ToString("yyyy/MM/dd hh:mm:ss") + " UTC";
+        _creationDateString = PivotalConverters.ConvertToPivotalDateTime(_creationDate);
       }
     }
 
@@ -323,6 +323,19 @@ namespace PivotalTrackerAPI.Domain.Model
     public IList<PivotalTask> Tasks { get; set; }
 
     #endregion
+
+    #endregion
+
+    #region Instance Methods
+
+    /// <summary>
+    /// Uses in-memory serialization to create an identical copy of the source object's properties
+    /// </summary>
+    /// <returns>A new instance of the item with the same properties</returns>
+    public PivotalStory Clone()
+    {
+      return SerializationHelper.Clone<PivotalStory>(this);
+    }
 
     #endregion
 
@@ -494,12 +507,38 @@ namespace PivotalTrackerAPI.Domain.Model
     /// <returns>The text that was added</returns>
     public string AddNote(PivotalUser user, string noteText)
     {
-      string url = String.Format("{0}/projects/{1}/stories/{2}?token={3}", PivotalService.BaseUrl, ProjectId, Id, user.ApiToken);
+      return PivotalNote.AddNote(user, ProjectId.GetValueOrDefault(), Id.GetValueOrDefault(), noteText);
+    }
 
-      string storyXml = String.Format("<note><text>{0}</text></note>", WebEncoding.UrlEncode(noteText));
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="user">The user to get the ApiToken from</param>
+    /// <param name="projectId">The project id</param>
+    /// <param name="story">The story id</param>
+    /// <param name="relativeStoryId">The id of the story that the story is being moved relative to</param>
+    /// <param name="moveAfter">If true, the story will be moved after the relative story; otherwise, it will be moved before it</param>
+    /// <returns>The new values for the story</returns>
+    public static PivotalStory MoveStory(PivotalUser user, int projectId, PivotalStory story, int relativeStoryId, bool moveAfter)
+    {
+      string ba = moveAfter ? "after" : "before";
+      string url = String.Format("{0}/projects/{1}/stories/{2}/moves?move[move]={3}&move[target]={4}&token={5}", PivotalService.BaseUrl, projectId, story.Id, ba, relativeStoryId, user.ApiToken);
+      
+      XmlDocument response = PivotalService.SubmitData(url, null, ServiceMethod.POST);
+      return story;
+    }
 
-      XmlDocument response = PivotalService.SubmitData(url, storyXml, ServiceMethod.POST);
-      return noteText;
+    /// <summary>
+    /// Uploads an attachment to a story
+    /// </summary>
+    /// <param name="user">The user to get the ApiToken from</param>
+    /// <param name="projectId">The project id</param>
+    /// <param name="storyId">The story id</param>
+    /// <param name="data">The data to upload (file as a byte array)</param>
+    /// <returns>The status of the upload (Pending or ?)</returns>
+    public static string UploadAttachment(PivotalUser user, int projectId, int storyId, byte[] data)
+    {
+      return PivotalAttachment.AddAttachment(user, projectId, storyId, data);
     }
 
     #endregion

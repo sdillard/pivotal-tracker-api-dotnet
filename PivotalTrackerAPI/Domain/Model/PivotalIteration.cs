@@ -65,7 +65,7 @@ namespace PivotalTrackerAPI.Domain.Model
         {
           try
           {
-            StartDate = DateTime.ParseExact(value.Substring(0, value.Length - 4), "yyyy/MM/dd hh:mm:ss", new System.Globalization.CultureInfo("en-US", true), System.Globalization.DateTimeStyles.NoCurrentDateDefault);
+            StartDate = PivotalConverters.ConvertFromPivotalDateTime(value);
           }
           catch
           {
@@ -94,7 +94,7 @@ namespace PivotalTrackerAPI.Domain.Model
         {
           try
           {
-            FinishDate = DateTime.ParseExact(value.Substring(0, value.Length - 4), "yyyy/MM/dd hh:mm:ss", new System.Globalization.CultureInfo("en-US", true), System.Globalization.DateTimeStyles.NoCurrentDateDefault);
+            FinishDate = PivotalConverters.ConvertFromPivotalDateTime(value);
           }
           catch
           {
@@ -127,7 +127,7 @@ namespace PivotalTrackerAPI.Domain.Model
       set
       {
         _startDate = value;
-        _startDateString = _startDate.ToString("yyyy/MM/dd hh:mm:ss") + " UTC";
+        _startDateString = PivotalConverters.ConvertToPivotalDateTime(_startDate);
       }
     }
 
@@ -144,7 +144,7 @@ namespace PivotalTrackerAPI.Domain.Model
       set
       {
         _finishDate = value;
-        _finishDateString = _finishDate.ToString("yyyy/MM/dd hh:mm:ss") + " UTC";
+        _finishDateString = PivotalConverters.ConvertToPivotalDateTime(_finishDate);
       }
     }
 
@@ -153,6 +153,16 @@ namespace PivotalTrackerAPI.Domain.Model
     #endregion
 
     #region Instance Methods
+
+    /// <summary>
+    /// Uses in-memory serialization to create an identical copy of the source object's properties
+    /// </summary>
+    /// <returns>A new instance of the item with the same properties</returns>
+    public PivotalIteration Clone()
+    {
+      return SerializationHelper.Clone<PivotalIteration>(this);
+    }
+
 
     /// <summary>
     /// Calculates the iteration's velocity based on the estimates in the stories in the iteration

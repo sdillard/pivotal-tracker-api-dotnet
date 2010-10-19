@@ -107,7 +107,7 @@ namespace PivotalTrackerAPI.Domain.Model
         {
           try
           {
-            CreationDate = DateTime.ParseExact(value.Substring(0, value.Length - 4), "yyyy/MM/dd hh:mm:ss", new System.Globalization.CultureInfo("en-US", true), System.Globalization.DateTimeStyles.NoCurrentDateDefault);
+            CreationDate = PivotalConverters.ConvertFromPivotalDateTime(value);
           }
           catch
           {
@@ -134,11 +134,24 @@ namespace PivotalTrackerAPI.Domain.Model
       set
       {
         _creationDate = value;
-        _creationDateString = _creationDate.ToString("yyyy/MM/dd hh:mm:ss") + " UTC";
+        _creationDateString = PivotalConverters.ConvertToPivotalDateTime(_creationDate);
       }
     }
 
     #endregion
+
+    #endregion
+
+    #region Instance Methods
+
+    /// <summary>
+    /// Uses in-memory serialization to create an identical copy of the source object's properties
+    /// </summary>
+    /// <returns>A new instance of the item with the same properties</returns>
+    public PivotalTask Clone()
+    {
+      return SerializationHelper.Clone<PivotalTask>(this);
+    }
 
     #endregion
 
@@ -178,7 +191,7 @@ namespace PivotalTrackerAPI.Domain.Model
 
       XmlDocument xml = SerializationHelper.SerializeToXmlDocument<PivotalTask>(task);
 
-      string taskXml = PivotalService.CleanXmlForSubmission(xml, "//story", ExcludeNodesOnSubmit, true);
+      string taskXml = PivotalService.CleanXmlForSubmission(xml, "//task", ExcludeNodesOnSubmit, true);
 
       XmlDocument response = PivotalService.SubmitData(url, taskXml, ServiceMethod.POST);
       return SerializationHelper.DeserializeFromXmlDocument<PivotalTask>(response);

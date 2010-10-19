@@ -35,22 +35,40 @@ namespace PivotalTrackerAPI.Domain.Services
     /// <returns>response from Pivotal API</returns>
     public static XmlDocument SubmitData(string url, string data, ServiceMethod method)
     {
-      HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-
-      request.ContentType = "application/xml";
-      //request.ContentType = "application/x-www-form-urlencoded";
-      //request.Method = "POST";
-      request.Method = method.ToString();
       if (!string.IsNullOrEmpty(data))
       {
         byte[] byteArray = Encoding.UTF8.GetBytes(data);
-        request.ContentLength = byteArray.Length;
+        return SubmitData(url, byteArray, method, "application/xml");
+      }
+      else
+      {
+        return SubmitData(url, data, method);
+      }
+    }
 
+    /// <summary>
+    /// Generic method to post data to the API (useful for file uploads)
+    /// </summary>
+    /// <remarks>This method does not catch errors, so the caller needs to handle any failures to communicate with Pivotal</remarks>
+    /// <param name="url">Url to submit to</param>
+    /// <param name="data">Data to upload</param>
+    /// <param name="method">The method (PUT, DELETE, POST, or GET) to use when sending data to the server</param>
+    /// <param name="contentType">The content type of the request (defaults to 'application/xml' if not provided)</param>
+    /// <returns>response from Pivotal API</returns>
+    public static XmlDocument SubmitData(string url, byte[] data, ServiceMethod method, string contentType)
+    {
+      HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+
+      request.ContentType = string.IsNullOrEmpty(contentType) ? "application/xml" : contentType;
+      request.Method = method.ToString();
+      if (data != null)
+      {
+        request.ContentLength = data.Length;
         Stream dataStream = null;
         try
         {
           dataStream = request.GetRequestStream();
-          dataStream.Write(byteArray, 0, byteArray.Length);
+          dataStream.Write(data, 0, data.Length);
         }
         finally
         {
@@ -74,7 +92,7 @@ namespace PivotalTrackerAPI.Domain.Services
         if (reader != null)
           reader.Close();
       }
-      
+
       return xmlDoc;
     }
 

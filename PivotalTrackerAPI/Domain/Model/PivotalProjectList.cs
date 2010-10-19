@@ -40,5 +40,18 @@ namespace PivotalTrackerAPI.Domain.Model
     /// </summary>
     [XmlElement("project")]
     public List<PivotalProject> Projects { get; set; }
+
+    #region Instance Methods
+
+    /// <summary>
+    /// Uses in-memory serialization to create an identical copy of the source object's properties
+    /// </summary>
+    /// <returns>A new instance of the item with the same properties</returns>
+    public PivotalProjectList Clone()
+    {
+      return SerializationHelper.Clone<PivotalProjectList>(this);
+    }
+
+    #endregion
   }
 }

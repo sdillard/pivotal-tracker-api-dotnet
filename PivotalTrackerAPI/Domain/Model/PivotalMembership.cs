@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
+using PivotalTrackerAPI.Util;
 
 namespace PivotalTrackerAPI.Domain.Model
 {
@@ -54,6 +55,19 @@ namespace PivotalTrackerAPI.Domain.Model
     /// </summary>
     [XmlElement("role", IsNullable = true)]
     public string Role { get; set; }
+
+    #endregion
+
+    #region Instance Methods
+
+    /// <summary>
+    /// Uses in-memory serialization to create an identical copy of the source object's properties
+    /// </summary>
+    /// <returns>A new instance of the item with the same properties</returns>
+    public PivotalMembership Clone()
+    {
+      return SerializationHelper.Clone<PivotalMembership>(this);
+    }
 
     #endregion
   }

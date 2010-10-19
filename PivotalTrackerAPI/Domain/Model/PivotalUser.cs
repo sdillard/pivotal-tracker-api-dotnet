@@ -60,7 +60,20 @@ namespace PivotalTrackerAPI.Domain.Model
 
     #endregion
 
-    #region Operations
+    #region Instance Methods
+
+    /// <summary>
+    /// Uses in-memory serialization to create an identical copy of the source object's properties
+    /// </summary>
+    /// <returns>A new instance of the item with the same properties</returns>
+    public PivotalUser Clone()
+    {
+      return SerializationHelper.Clone<PivotalUser>(this);
+    }
+
+    #endregion
+
+    #region Data Operations
 
     /// <summary>
     /// Retrieves the user's information, including the token, from Pivotal

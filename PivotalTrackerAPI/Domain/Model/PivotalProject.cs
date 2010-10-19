@@ -199,6 +199,19 @@ namespace PivotalTrackerAPI.Domain.Model
 
     #endregion
 
+    #region Instance Methods
+
+    /// <summary>
+    /// Uses in-memory serialization to create an identical copy of the source object's properties
+    /// </summary>
+    /// <returns>A new instance of the item with the same properties</returns>
+    public PivotalProject Clone()
+    {
+      return SerializationHelper.Clone<PivotalProject>(this);
+    }
+
+    #endregion
+
     #region Data Retrieval Methods
 
     #region Story Retrieval
@@ -512,6 +525,17 @@ namespace PivotalTrackerAPI.Domain.Model
     }
 
     /// <summary>
+    /// Adds a member to a project
+    /// </summary>
+    /// <param name="user">The user to get the ApiToken from</param>
+    /// <param name="member">The person and role to add to the project</param>
+    /// <returns>The added member's identity</returns>
+    public PivotalMembership AddMember(PivotalUser user, PivotalMembership member)
+    {
+      return AddMember(user, this, member);
+    }
+
+    /// <summary>
     /// Removes a member from a project in Pivotal
     /// </summary>
     /// <param name="user">The user to get the ApiToken from</param>
@@ -534,6 +558,85 @@ namespace PivotalTrackerAPI.Domain.Model
       string url = String.Format("{0}/projects/{1}/memberships/{2}?token={3}", PivotalService.BaseUrl, project.Id.GetValueOrDefault(), member.Id.GetValueOrDefault(), user.ApiToken);
       XmlDocument response = PivotalService.SubmitData(url, null, ServiceMethod.DELETE);
       return member;
+    }
+
+    #endregion
+
+    #region Mass data migration methods
+
+    /// <summary>
+    /// Copies stories, tasks, and comments from one project to another.  Does not alter original stories.  NOTE: timestamps will most likely not be maintained.
+    /// </summary>
+    /// <param name="user">The user to get the ApiToken from</param>
+    /// <param name="sourceProject">The source project containing the stories to copy from</param>
+    /// <param name="destinationProject">The destination project containing the stories to copy to</param>
+    /// <param name="stories">The list of stories to copy</param>
+    /// <param name="createMemberships">If true, the memberships in the source project will be iterated and copied into the destination project before copying so the comments are attributed.  If false, then the comments will only be attributed if the user is already in the destination project.   NOTE: Only members in the source that do not have a matching email address in the destination will be added.</param>
+    /// <returns>The number of stories that were copied</returns>
+    public static int MigrateProjectData(PivotalUser user, PivotalProject sourceProject, PivotalProject destinationProject, IList<PivotalStory> stories, bool createMemberships)
+    {
+      int membersAdded = 0;
+      return MigrateProjectData(user, sourceProject, destinationProject, stories, createMemberships, out membersAdded);
+    }
+
+    /// <summary>
+    /// Copies stories, tasks, and comments from one project to another.  Does not alter original stories.  NOTE: timestamps will most likely not be maintained.
+    /// </summary>
+    /// <param name="user">The user to get the ApiToken from</param>
+    /// <param name="sourceProject">The source project containing the stories to copy from</param>
+    /// <param name="destinationProject">The destination project containing the stories to copy to</param>
+    /// <param name="stories">The list of stories to copy</param>
+    /// <param name="createMemberships">If true, the memberships in the source project will be iterated and copied into the destination project before copying so the comments are attributed.  If false, then the comments will only be attributed if the user is already in the destination project.   NOTE: Only members in the source that do not have a matching email address in the destination will be added.</param>
+    /// <param name="membershipsAdded">Returns the number of members that were added to the destination project</param>
+    /// <returns>The number of stories that were copied</returns>
+    public static int MigrateProjectData(PivotalUser user, PivotalProject sourceProject, PivotalProject destinationProject, IList<PivotalStory> stories, bool createMemberships, out int membershipsAdded)
+    {
+      int countMigrated = 0;
+      membershipsAdded = 0;
+      //destinationProject.LoadStories(user);
+      destinationProject.LoadMembers(user);
+      sourceProject.LoadMembers(user);
+      if (createMemberships)
+      {
+        foreach (PivotalMembership m in sourceProject.Members)
+        {
+          bool hasMember = false;
+          foreach (PivotalMembership destMember in destinationProject.Members)
+          {
+            if (destMember.Person.Email == m.Person.Email)
+            {
+              hasMember = true;
+            }
+          }
+          if (!hasMember)
+          {
+            destinationProject.AddMember(user, m);
+            membershipsAdded++;
+          }
+        }
+        if (membershipsAdded > 0)
+        {
+          destinationProject.LoadMembers(user);
+        }
+      }
+      foreach (PivotalStory s in stories)
+      {
+        
+        PivotalStory clone = s.Clone();
+        s.LoadTasks(user);
+        PivotalTaskList taskList = new PivotalTaskList();
+        taskList.Tasks = (List<PivotalTask>)s.Tasks;
+        PivotalTaskList clonedTasks = taskList.Clone();
+        foreach (PivotalTask t in clonedTasks.Tasks)
+        {
+          t.TaskId = null;
+        }
+        clone.Tasks = clonedTasks.Tasks;
+        clone.ProjectId = destinationProject.Id;
+        clone.Id = null;
+        destinationProject.AddStory(user, clone, true);
+      }
+      return countMigrated;
     }
 
     #endregion
