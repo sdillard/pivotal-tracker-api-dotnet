@@ -103,7 +103,7 @@ namespace PivotalTrackerAPI.Domain.Model
       set
       {
         _creationDateString = value;
-        if (value.Length > 4)
+        if (value != null && value.Length > 4)
         {
           try
           {

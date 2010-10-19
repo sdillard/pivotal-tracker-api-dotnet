@@ -17,6 +17,6 @@ namespace PivotalTrackerAPI.Domain.Model
     /// The iterations in the response from Pivotal
     /// </summary>
     [XmlElement("iteration")]
-    public IList<PivotalIteration> Iterations { get; set; }
+    public List<PivotalIteration> Iterations { get; set; }
   }
 }

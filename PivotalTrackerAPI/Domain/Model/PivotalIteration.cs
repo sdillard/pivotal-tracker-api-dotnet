@@ -61,7 +61,7 @@ namespace PivotalTrackerAPI.Domain.Model
       set
       {
         _startDateString = value;
-        if (value.Length > 4)
+        if (value != null && value.Length > 4)
         {
           try
           {
@@ -90,7 +90,7 @@ namespace PivotalTrackerAPI.Domain.Model
       set
       {
         _finishDateString = value;
-        if (value.Length > 4)
+        if (value != null && value.Length > 4)
         {
           try
           {

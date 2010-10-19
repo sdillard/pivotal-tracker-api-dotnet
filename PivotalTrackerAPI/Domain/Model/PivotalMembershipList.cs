@@ -35,6 +35,6 @@ namespace PivotalTrackerAPI.Domain.Model
     /// Container property for memberships
     /// </summary>
     [XmlElement("membership")]
-    public IList<PivotalMembership> Memberships { get; set; }
+    public List<PivotalMembership> Memberships { get; set; }
   }
 }

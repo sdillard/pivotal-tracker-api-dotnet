@@ -172,7 +172,7 @@ namespace PivotalTrackerAPI.Domain.Model
       set
       {
         _creationDateString = value;
-        if (value.Length > 4)
+        if (value != null && value.Length > 4)
         {
           try
           {
@@ -201,7 +201,7 @@ namespace PivotalTrackerAPI.Domain.Model
       set
       {
         _acceptedDateString = value;
-        if (value.Length > 4)
+        if (value != null && value.Length > 4)
         {
           try
           {
@@ -272,7 +272,10 @@ namespace PivotalTrackerAPI.Domain.Model
           sb.Append(s + ",");
         }
         string tmpLabels = sb.ToString();
-        _labels = tmpLabels.Substring(0, _labels.Length);
+        if (tmpLabels.Length > 0)
+          _labels = tmpLabels.Substring(0, tmpLabels.Length);
+        else
+          _labels = "";
         _labelValues = listVals;
       }
     }
